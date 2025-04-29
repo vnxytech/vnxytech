@@ -1,0 +1,45 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WhatsApp Bot Panel</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: center; }
+    #log { text-align: left; margin-top: 20px; max-height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🤖 WhatsApp Bot Panel</h1>
+  <p>Status: <span id="status">Loading...</span></p>
+  <button onclick="startBot()">Start Bot</button>
+  <div id="log"></div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const logEl = document.getElementById("log");
+
+    const socket = io();
+    socket.on("log", (msg) => {
+      const p = document.createElement("p");
+      p.textContent = msg;
+      logEl.appendChild(p);
+      logEl.scrollTop = logEl.scrollHeight;
+    });
+
+    async function fetchStatus() {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      statusEl.textContent = data.isReady ? "🟢 Ready" : "🔴 Not Ready";
+    }
+
+    async function startBot() {
+      await fetch('/api/start');
+      setTimeout(fetchStatus, 3000);
+    }
+
+    fetchStatus();
+  </script>
+</body>
+</html>
